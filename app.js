@@ -21,36 +21,26 @@ let isAuthModeLogin = true;
 const isLoginPage = document.getElementById("auth-section") !== null;
 const isDashboardPage = document.getElementById("dashboard-section") !== null;
 
-// ==========================================
-// FUNGSI PINDAH TAB (LACI SAMPING)
-// ==========================================
 function bukaTab(event, namaTab) {
-  // 1. Matikan warna oren di semua menu
   let menuItems = document.getElementsByClassName("menu-item");
   for (let i = 0; i < menuItems.length; i++) {
     menuItems[i].classList.remove("active");
   }
 
-  // 2. Sembunyikan semua isi layar sebelah kanan
   let tabContents = document.getElementsByClassName("tab-content");
   for (let i = 0; i < tabContents.length; i++) {
     tabContents[i].classList.remove("active");
   }
 
-  // 3. Tampilkan layar yang dipilih & nyalakan warna oren di menu yang diklik
   document.getElementById(namaTab).classList.add("active");
   if (event) event.currentTarget.classList.add("active");
 }
 
 function buatPesananLaluKeBeranda() {
   buatPesanan();
-  // Otomatis klik menu pertama (Beranda) setelah pesanan berhasil
   document.getElementsByClassName("menu-item")[0].click();
 }
 
-// ==========================================
-// ROUTER & DETEKSI LOGIN (Pindah Layar)
-// ==========================================
 auth.onAuthStateChanged((user) => {
   if (user) {
     if (isLoginPage) {
@@ -114,7 +104,7 @@ function setupDashboardUI() {
 
   if (isAdmin) {
     document.getElementById("admin-stats-panel").style.display = "block";
-    document.getElementById("menu-admin-katalog").style.display = "block"; // Munculkan Menu Laci Katalog
+    document.getElementById("menu-admin-katalog").style.display = "block";
     document.getElementById("kolom-aksi-admin").style.display = "table-cell";
     document.getElementById("filter-admin").style.display = "flex";
     document.getElementById("tabel-title").innerText = "Semua Pesanan Masuk";
@@ -167,23 +157,34 @@ function loadDaftarProduk() {
 
 function buatPesanan() {
   const produkId = document.getElementById("pilihProduk").value;
+  const jumlah = Number(document.getElementById("jumlahPesanan").value) || 1;
   const catatan = document.getElementById("catatanPesanan").value;
+
   if (!produkId) return alert("Pilih produk!");
+  if (jumlah < 1) return alert("Jumlah minimal 1!");
+
   const p = daftarProduk.find((x) => x.id === produkId);
+  const totalHarga = p.harga * jumlah; // HITUNG TOTAL OTOMATIS
 
   db.collection("transaksi")
     .add({
       emailPemesan: currentUser.email,
       namaBarang: p.nama,
-      harga: p.harga,
+      hargaSatuan: p.harga,
+      jumlah: jumlah,
+      totalHarga: totalHarga,
       catatan: catatan || "-",
       statusBayar: "Belum Dibayar",
       statusKerja: "Belum Dibuat",
       timestamp: Date.now(),
     })
     .then(() => {
-      alert("Berhasil Dipesan!");
+      alert(
+        "Pesanan Berhasil Dibuat! Total: Rp " +
+          totalHarga.toLocaleString("id-ID"),
+      );
       document.getElementById("catatanPesanan").value = "";
+      document.getElementById("jumlahPesanan").value = "1";
     });
 }
 
@@ -224,6 +225,11 @@ function renderTabelTransaksi() {
     let badgeKerja =
       data.statusKerja === "Sudah Dibuat" ? "bg-green" : "bg-red";
 
+    // Fallback untuk data lama jika belum ada field totalHarga
+    let hargaSatuan = data.hargaSatuan || data.harga || 0;
+    let jumlah = data.jumlah || 1;
+    let totalHarga = data.totalHarga || hargaSatuan * jumlah;
+
     let actionHtml = "";
     if (isAdmin) {
       actionHtml = `<td style="display: table-cell;">
@@ -244,7 +250,9 @@ function renderTabelTransaksi() {
                 <td style="font-size:12px; color:#ccc;">${tgl}</td>
                 <td>${data.emailPemesan}</td>
                 <td><strong>${data.namaBarang}</strong></td>
-                <td>Rp ${data.harga.toLocaleString("id-ID")}</td>
+                <td>Rp ${hargaSatuan.toLocaleString("id-ID")}</td>
+                <td><span class="badge bg-dark">${jumlah} pcs</span></td>
+                <td><strong style="color: var(--accent-orange);">Rp ${totalHarga.toLocaleString("id-ID")}</strong></td>
                 <td>${data.catatan}</td>
                 <td><span class="badge ${badgeBayar}">${data.statusBayar}</span></td>
                 <td><span class="badge ${badgeKerja}">${data.statusKerja}</span></td>
@@ -262,10 +270,11 @@ function hitungStatistikAdmin() {
 
   semuaTransaksi.forEach((t) => {
     if (t.statusBayar === "Sudah Dibayar") {
-      totalPendapatan += Number(t.harga);
+      let total = t.totalHarga || t.hargaSatuan * t.jumlah || t.harga || 0;
+      totalPendapatan += Number(total);
       let tgl = new Date(t.timestamp);
       if (tgl.getMonth() === bulanIni && tgl.getFullYear() === tahunIni)
-        pendapatanBulanIni += Number(t.harga);
+        pendapatanBulanIni += Number(total);
     }
   });
 

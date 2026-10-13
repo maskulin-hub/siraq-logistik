@@ -22,7 +22,7 @@
           <span id="user-email-display" class="badge bg-dark"></span>
         </div>
 
-        <!-- MENU NAVIGASI DENGAN IKON MODERN -->
+        <!-- MENU NAVIGASI -->
         <ul class="sidebar-menu">
           <li class="menu-item active" onclick="bukaTab(event, 'tab-beranda')">
             <svg
@@ -68,7 +68,7 @@
             >
               <circle cx="12" cy="12" r="3"></circle>
               <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
               ></path>
             </svg>
             Kelola Katalog
@@ -93,11 +93,10 @@
         </div>
       </aside>
 
-      <!-- KONTEN UTAMA (SEBELAH KANAN) -->
+      <!-- KONTEN UTAMA -->
       <main class="content-area">
         <!-- TAB 1: BERANDA & TRANSAKSI -->
         <div id="tab-beranda" class="tab-content active">
-          <!-- PANEL STATISTIK (Hanya Admin) -->
           <div id="admin-stats-panel" class="glass-panel" style="display: none">
             <h3 class="text-red">📊 Laporan Pendapatan</h3>
             <div class="stats-grid">
@@ -116,11 +115,9 @@
             </div>
           </div>
 
-          <!-- PANEL TABEL TRANSAKSI -->
           <div class="glass-panel">
             <h3 id="tabel-title">Daftar Pesanan</h3>
 
-            <!-- FITUR FILTER KHUSUS ADMIN -->
             <div
               id="filter-admin"
               style="
@@ -162,7 +159,9 @@
                     <th>Tanggal</th>
                     <th>Pemesan</th>
                     <th>Barang</th>
-                    <th>Harga</th>
+                    <th>Harga Satuan</th>
+                    <th>Jumlah</th>
+                    <th>Total Bayar</th>
                     <th>Catatan</th>
                     <th>Pembayaran</th>
                     <th>Pekerjaan</th>
@@ -182,6 +181,16 @@
           <select id="pilihProduk">
             <option value="">-- Memuat Produk... --</option>
           </select>
+
+          <label class="mt-3">Jumlah (Kuantitas):</label>
+          <input
+            type="number"
+            id="jumlahPesanan"
+            value="1"
+            min="1"
+            placeholder="Masukkan jumlah pesanan"
+          />
+
           <label class="mt-3">Catatan Tambahan (Opsional):</label>
           <input
             type="text"
@@ -193,7 +202,7 @@
           </button>
         </div>
 
-        <!-- TAB 3: KELOLA KATALOG (Hanya Admin) -->
+        <!-- TAB 3: KELOLA KATALOG -->
         <div id="tab-katalog" class="tab-content glass-panel">
           <h3 class="text-red">⚙️ Kelola Katalog Produk</h3>
           <div class="form-group-inline">
