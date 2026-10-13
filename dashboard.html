@@ -11,7 +11,7 @@
   </head>
   <body>
     <div id="dashboard-section" class="layout-wrapper active">
-      <!-- SIDEBAR (LACI SAMPING) -->
+      <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-brand">
           <img src="image_0601b3.jpg" alt="Logo" class="logo-small" />
@@ -22,7 +22,6 @@
           <span id="user-email-display" class="badge bg-dark"></span>
         </div>
 
-        <!-- MENU NAVIGASI -->
         <ul class="sidebar-menu">
           <li class="menu-item active" onclick="bukaTab(event, 'tab-beranda')">
             <svg
@@ -68,7 +67,7 @@
             >
               <circle cx="12" cy="12" r="3"></circle>
               <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
               ></path>
             </svg>
             Kelola Katalog
@@ -95,7 +94,6 @@
 
       <!-- KONTEN UTAMA -->
       <main class="content-area">
-        <!-- TAB 1: BERANDA & TRANSAKSI -->
         <div id="tab-beranda" class="tab-content active">
           <div id="admin-stats-panel" class="glass-panel" style="display: none">
             <h3 class="text-red">📊 Laporan Pendapatan</h3>
@@ -174,7 +172,7 @@
           </div>
         </div>
 
-        <!-- TAB 2: BUAT PESANAN -->
+        <!-- TAB 2 -->
         <div id="tab-pesan" class="tab-content glass-panel">
           <h3>🛒 Buat Pesanan Baru</h3>
           <label>Pilih Produk:</label>
@@ -202,7 +200,7 @@
           </button>
         </div>
 
-        <!-- TAB 3: KELOLA KATALOG -->
+        <!-- TAB 3 -->
         <div id="tab-katalog" class="tab-content glass-panel">
           <h3 class="text-red">⚙️ Kelola Katalog Produk</h3>
           <div class="form-group-inline">

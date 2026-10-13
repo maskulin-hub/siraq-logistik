@@ -21,9 +21,6 @@ let isAuthModeLogin = true;
 const isLoginPage = document.getElementById("auth-section") !== null;
 const isDashboardPage = document.getElementById("dashboard-section") !== null;
 
-// ==========================================
-// FUNGSI PINDAH TAB (LACI SAMPING)
-// ==========================================
 function bukaTab(event, namaTab) {
   let menuItems = document.getElementsByClassName("menu-item");
   for (let i = 0; i < menuItems.length; i++) {
@@ -44,9 +41,6 @@ function buatPesananLaluKeBeranda() {
   document.getElementsByClassName("menu-item")[0].click();
 }
 
-// ==========================================
-// ROUTER & DETEKSI LOGIN (Pindah Layar)
-// ==========================================
 auth.onAuthStateChanged((user) => {
   if (user) {
     if (isLoginPage) {
@@ -122,9 +116,6 @@ function setupDashboardUI() {
   fetchDaftarTransaksi();
 }
 
-// ==========================================
-// SISTEM PRODUK (KATALOG)
-// ==========================================
 function tambahProduk() {
   const nama = document.getElementById("namaProdukBaru").value;
   const harga = document.getElementById("hargaProdukBaru").value;
@@ -164,9 +155,6 @@ function loadDaftarProduk() {
     });
 }
 
-// ==========================================
-// SISTEM TRANSAKSI & PERKALIAN OTOMATIS
-// ==========================================
 function buatPesanan() {
   const produkId = document.getElementById("pilihProduk").value;
   const jumlahInput = document.getElementById("jumlahPesanan");
@@ -180,7 +168,7 @@ function buatPesanan() {
   if (!p) return alert("Produk tidak ditemukan!");
 
   const hargaSatuan = Number(p.harga) || 0;
-  const totalHarga = hargaSatuan * jumlah; // Perkalian otomatis harga satuan x jumlah
+  const totalHarga = hargaSatuan * jumlah;
 
   db.collection("transaksi")
     .add({
@@ -244,7 +232,6 @@ function renderTabelTransaksi() {
     let badgeKerja =
       data.statusKerja === "Sudah Dibuat" ? "bg-green" : "bg-red";
 
-    // Logika pengaman untuk data transaksi lama
     let jumlah = Number(data.jumlah) || 1;
     let hargaSatuan = Number(data.hargaSatuan);
 
@@ -271,6 +258,7 @@ function renderTabelTransaksi() {
       minute: "2-digit",
     });
 
+    // URUTAN TD HARUS SISNYA SAMA PERSIS DENGAN TH DI HTML
     tabel.innerHTML += `
             <tr>
                 <td style="font-size:12px; color:#ccc;">${tgl}</td>
