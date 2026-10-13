@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Siraq - Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  </head>
+  <body>
+    <div id="dashboard-section" class="layout-wrapper active">
+      <!-- SIDEBAR (LACI SAMPING) -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <img src="image_0601b3.jpg" alt="Logo" class="logo-small" />
+          <span>Siraq Boys</span>
+        </div>
+
+        <div class="sidebar-user">
+          <span id="user-email-display" class="badge bg-dark"></span>
+        </div>
+
+        <!-- MENU NAVIGASI DENGAN IKON MODERN -->
+        <ul class="sidebar-menu">
+          <li class="menu-item active" onclick="bukaTab(event, 'tab-beranda')">
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Beranda & Transaksi
+          </li>
+          <li class="menu-item" onclick="bukaTab(event, 'tab-pesan')">
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path
+                d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+              ></path>
+            </svg>
+            Buat Pesanan Baru
+          </li>
+          <li
+            class="menu-item"
+            id="menu-admin-katalog"
+            style="display: none"
+            onclick="bukaTab(event, 'tab-katalog')"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              ></path>
+            </svg>
+            Kelola Katalog
+          </li>
+        </ul>
+
+        <div class="sidebar-bottom">
+          <button onclick="logout()" class="btn-logout w-100 flex-center">
+            <svg
+              class="btn-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Keluar Sistem
+          </button>
+        </div>
+      </aside>
+
+      <!-- KONTEN UTAMA (SEBELAH KANAN) -->
+      <main class="content-area">
+        <!-- TAB 1: BERANDA & TRANSAKSI -->
+        <div id="tab-beranda" class="tab-content active">
+          <!-- PANEL STATISTIK (Hanya Admin) -->
+          <div id="admin-stats-panel" class="glass-panel" style="display: none">
+            <h3 class="text-red">📊 Laporan Pendapatan</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <h4>Pendapatan Bulan Ini</h4>
+                <h2 id="pendapatan-bulan-ini">Rp 0</h2>
+              </div>
+              <div class="stat-card">
+                <h4>Total Pendapatan</h4>
+                <h2 id="total-pendapatan">Rp 0</h2>
+              </div>
+              <div class="stat-card">
+                <h4>Total Pesanan</h4>
+                <h2 id="total-pesanan">0</h2>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL TABEL TRANSAKSI -->
+          <div class="glass-panel">
+            <h3 id="tabel-title">Daftar Pesanan</h3>
+
+            <!-- FITUR FILTER KHUSUS ADMIN -->
+            <div
+              id="filter-admin"
+              style="
+                display: none;
+                gap: 15px;
+                margin-top: 15px;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 15px;
+                border-radius: 12px;
+              "
+            >
+              <strong>Sortir Data:</strong>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                <select
+                  id="filterBayar"
+                  onchange="renderTabelTransaksi()"
+                  style="width: auto"
+                >
+                  <option value="Semua">Semua Pembayaran</option>
+                  <option value="Belum Dibayar">Belum Dibayar</option>
+                  <option value="Sudah Dibayar">Sudah Dibayar</option>
+                </select>
+                <select
+                  id="filterKerja"
+                  onchange="renderTabelTransaksi()"
+                  style="width: auto"
+                >
+                  <option value="Semua">Semua Pekerjaan</option>
+                  <option value="Belum Dibuat">Belum Dibuat</option>
+                  <option value="Sudah Dibuat">Sudah Dibuat</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Pemesan</th>
+                    <th>Barang</th>
+                    <th>Harga</th>
+                    <th>Catatan</th>
+                    <th>Pembayaran</th>
+                    <th>Pekerjaan</th>
+                    <th id="kolom-aksi-admin" style="display: none">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabel-transaksi"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: BUAT PESANAN -->
+        <div id="tab-pesan" class="tab-content glass-panel">
+          <h3>🛒 Buat Pesanan Baru</h3>
+          <label>Pilih Produk:</label>
+          <select id="pilihProduk">
+            <option value="">-- Memuat Produk... --</option>
+          </select>
+          <label class="mt-3">Catatan Tambahan (Opsional):</label>
+          <input
+            type="text"
+            id="catatanPesanan"
+            placeholder="Misal: Ukuran L, Warna Hitam"
+          />
+          <button onclick="buatPesananLaluKeBeranda()" class="btn-primary mt-3">
+            Konfirmasi Pesanan
+          </button>
+        </div>
+
+        <!-- TAB 3: KELOLA KATALOG (Hanya Admin) -->
+        <div id="tab-katalog" class="tab-content glass-panel">
+          <h3 class="text-red">⚙️ Kelola Katalog Produk</h3>
+          <div class="form-group-inline">
+            <input
+              type="text"
+              id="namaProdukBaru"
+              placeholder="Nama Produk Baru"
+            />
+            <input
+              type="number"
+              id="hargaProdukBaru"
+              placeholder="Harga (Rp)"
+            />
+            <button onclick="tambahProduk()" class="btn-primary">
+              Tambah Produk
+            </button>
+          </div>
+          <div class="table-responsive mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Produk</th>
+                  <th>Harga</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tabel-katalog-admin"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
