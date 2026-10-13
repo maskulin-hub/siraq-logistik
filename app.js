@@ -245,9 +245,11 @@ function renderTabelTransaksi() {
 
     let actionHtml = "";
     if (isAdmin) {
+      // TOMBOL AKSI LENGKAP: Bayar, Kerja, dan Tombol Hapus Transaksi
       actionHtml = `<td style="display: table-cell;">
                 <button class="btn-action" onclick="ubahBayar('${data.id}', '${data.statusBayar}')">💳 Bayar</button>
                 <button class="btn-action" onclick="ubahKerja('${data.id}', '${data.statusKerja}')">🛠️ Kerja</button>
+                <button class="btn-action bg-red" onclick="hapusTransaksi('${data.id}')" style="color:#F87171; border-color:rgba(239, 68, 68, 0.3);">🗑️ Hapus</button>
             </td>`;
     }
 
@@ -258,7 +260,6 @@ function renderTabelTransaksi() {
       minute: "2-digit",
     });
 
-    // URUTAN TD HARUS SISNYA SAMA PERSIS DENGAN TH DI HTML
     tabel.innerHTML += `
             <tr>
                 <td style="font-size:12px; color:#ccc;">${tgl}</td>
@@ -312,4 +313,19 @@ function ubahKerja(id, stat) {
     .update({
       statusKerja: stat === "Belum Dibuat" ? "Sudah Dibuat" : "Belum Dibuat",
     });
+}
+
+// FUNGSI UNTUK MENGHAPUS TRANSAKSI (Hanya Admin)
+function hapusTransaksi(id) {
+  if (confirm("Apakah Anda yakin ingin menghapus transaksi ini dari daftar?")) {
+    db.collection("transaksi")
+      .doc(id)
+      .delete()
+      .then(() => {
+        alert("Transaksi berhasil dihapus!");
+      })
+      .catch((err) => {
+        alert("Gagal menghapus transaksi: " + err.message);
+      });
+  }
 }
