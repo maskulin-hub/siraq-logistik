@@ -21,6 +21,9 @@ let isAuthModeLogin = true;
 const isLoginPage = document.getElementById("auth-section") !== null;
 const isDashboardPage = document.getElementById("dashboard-section") !== null;
 
+// ==========================================
+// FUNGSI PINDAH TAB (LACI SAMPING)
+// ==========================================
 function bukaTab(event, namaTab) {
   let menuItems = document.getElementsByClassName("menu-item");
   for (let i = 0; i < menuItems.length; i++) {
@@ -41,6 +44,9 @@ function buatPesananLaluKeBeranda() {
   document.getElementsByClassName("menu-item")[0].click();
 }
 
+// ==========================================
+// ROUTER & DETEKSI LOGIN (Pindah Layar)
+// ==========================================
 auth.onAuthStateChanged((user) => {
   if (user) {
     if (isLoginPage) {
@@ -116,6 +122,9 @@ function setupDashboardUI() {
   fetchDaftarTransaksi();
 }
 
+// ==========================================
+// SISTEM PRODUK (KATALOG)
+// ==========================================
 function tambahProduk() {
   const nama = document.getElementById("namaProdukBaru").value;
   const harga = document.getElementById("hargaProdukBaru").value;
@@ -155,22 +164,29 @@ function loadDaftarProduk() {
     });
 }
 
+// ==========================================
+// SISTEM TRANSAKSI & PERKALIAN OTOMATIS
+// ==========================================
 function buatPesanan() {
   const produkId = document.getElementById("pilihProduk").value;
-  const jumlah = Number(document.getElementById("jumlahPesanan").value) || 1;
+  const jumlahInput = document.getElementById("jumlahPesanan");
+  const jumlah = Number(jumlahInput ? jumlahInput.value : 1) || 1;
   const catatan = document.getElementById("catatanPesanan").value;
 
-  if (!produkId) return alert("Pilih produk!");
+  if (!produkId) return alert("Pilih produk terlebih dahulu!");
   if (jumlah < 1) return alert("Jumlah minimal 1!");
 
   const p = daftarProduk.find((x) => x.id === produkId);
-  const totalHarga = p.harga * jumlah; // HITUNG TOTAL OTOMATIS
+  if (!p) return alert("Produk tidak ditemukan!");
+
+  const hargaSatuan = Number(p.harga) || 0;
+  const totalHarga = hargaSatuan * jumlah; // Perkalian otomatis harga satuan x jumlah
 
   db.collection("transaksi")
     .add({
       emailPemesan: currentUser.email,
       namaBarang: p.nama,
-      hargaSatuan: p.harga,
+      hargaSatuan: hargaSatuan,
       jumlah: jumlah,
       totalHarga: totalHarga,
       catatan: catatan || "-",
@@ -184,7 +200,10 @@ function buatPesanan() {
           totalHarga.toLocaleString("id-ID"),
       );
       document.getElementById("catatanPesanan").value = "";
-      document.getElementById("jumlahPesanan").value = "1";
+      if (jumlahInput) jumlahInput.value = "1";
+    })
+    .catch((err) => {
+      alert("Gagal membuat pesanan: " + err.message);
     });
 }
 
@@ -225,10 +244,17 @@ function renderTabelTransaksi() {
     let badgeKerja =
       data.statusKerja === "Sudah Dibuat" ? "bg-green" : "bg-red";
 
-    // Fallback untuk data lama jika belum ada field totalHarga
-    let hargaSatuan = data.hargaSatuan || data.harga || 0;
-    let jumlah = data.jumlah || 1;
-    let totalHarga = data.totalHarga || hargaSatuan * jumlah;
+    // Logika pengaman untuk data transaksi lama
+    let jumlah = Number(data.jumlah) || 1;
+    let hargaSatuan = Number(data.hargaSatuan);
+
+    if (!hargaSatuan && data.harga) {
+      hargaSatuan = Number(data.harga) / jumlah;
+    } else if (!hargaSatuan) {
+      hargaSatuan = 0;
+    }
+
+    let totalHarga = Number(data.totalHarga) || hargaSatuan * jumlah;
 
     let actionHtml = "";
     if (isAdmin) {
