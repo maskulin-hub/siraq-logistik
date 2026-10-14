@@ -75,7 +75,18 @@
         </ul>
 
         <div class="sidebar-bottom">
-          <button onclick="logout()" class="btn-logout w-100 flex-center">
+          <button
+            onclick="logout()"
+            class="btn-logout w-100 flex-center"
+            style="
+              background: rgba(239, 68, 68, 0.2);
+              border: 1px solid rgba(239, 68, 68, 0.5);
+              color: white;
+              padding: 10px;
+              border-radius: 8px;
+              cursor: pointer;
+            "
+          >
             <svg
               class="btn-icon"
               viewBox="0 0 24 24"
@@ -95,16 +106,17 @@
       <!-- KONTEN UTAMA -->
       <main class="content-area">
         <div id="tab-beranda" class="tab-content active">
+          <!-- STATISTIK ADMIN -->
           <div id="admin-stats-panel" class="glass-panel" style="display: none">
             <h3 class="text-red">📊 Laporan Pendapatan</h3>
             <div class="stats-grid">
               <div class="stat-card">
                 <h4>Pendapatan Bulan Ini</h4>
-                <h2 id="pendapatan-bulan-ini">Rp 0</h2>
+                <h2 id="pendapatan-bulan-ini">$0</h2>
               </div>
               <div class="stat-card">
                 <h4>Total Pendapatan</h4>
-                <h2 id="total-pendapatan">Rp 0</h2>
+                <h2 id="total-pendapatan">$0</h2>
               </div>
               <div class="stat-card">
                 <h4>Total Pesanan</h4>
@@ -115,7 +127,6 @@
 
           <div class="glass-panel">
             <h3 id="tabel-title">Daftar Pesanan</h3>
-
             <div
               id="filter-admin"
               style="
@@ -150,15 +161,13 @@
               </div>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive mt-3">
               <table>
                 <thead>
                   <tr>
                     <th>Tanggal</th>
                     <th>Pemesan</th>
-                    <th>Barang</th>
-                    <th>Harga Satuan</th>
-                    <th>Jumlah</th>
+                    <th style="min-width: 200px">Detail Pesanan</th>
                     <th>Total Bayar</th>
                     <th>Catatan</th>
                     <th>Pembayaran</th>
@@ -174,49 +183,107 @@
           </div>
         </div>
 
-        <!-- TAB 2 -->
-        <div id="tab-pesan" class="tab-content glass-panel">
-          <h3>🛒 Buat Pesanan Baru</h3>
-          <label>Pilih Produk:</label>
-          <select id="pilihProduk">
-            <option value="">-- Memuat Produk... --</option>
-          </select>
+        <!-- TAB 2: BUAT PESANAN BENTUK KATALOG GRID & KERANJANG -->
+        <div id="tab-pesan" class="tab-content">
+          <div class="pesanan-container">
+            <!-- Bagian Kiri: Katalog & Filter -->
+            <div class="katalog-section glass-panel">
+              <h3>🛒 Pilih Produk Tersedia</h3>
+              <div
+                id="kategori-filter"
+                style="margin-top: 10px; margin-bottom: 15px"
+              >
+                <!-- Tombol Kategori -->
+              </div>
+              <div id="grid-katalog">
+                <!-- Kartu Produk -->
+              </div>
+            </div>
 
-          <label class="mt-3">Jumlah (Kuantitas):</label>
-          <input
-            type="number"
-            id="jumlahPesanan"
-            value="1"
-            min="1"
-            placeholder="Masukkan jumlah pesanan"
-          />
+            <!-- Bagian Kanan: Keranjang Belanja -->
+            <div class="keranjang-section glass-panel">
+              <h3 style="color: var(--accent-orange)">🛍️ Keranjang Saya</h3>
+              <div
+                id="list-keranjang"
+                style="min-height: 100px; margin-top: 15px"
+              >
+                <p style="text-align: center; color: #ccc; font-size: 12px">
+                  Keranjang masih kosong
+                </p>
+              </div>
 
-          <label class="mt-3">Catatan Tambahan (Opsional):</label>
-          <input
-            type="text"
-            id="catatanPesanan"
-            placeholder="Misal: Ukuran L, Warna Hitam"
-          />
-          <button onclick="buatPesananLaluKeBeranda()" class="btn-primary mt-3">
-            Konfirmasi Pesanan
-          </button>
+              <div
+                style="
+                  margin-top: 20px;
+                  border-top: 1px solid rgba(255, 255, 255, 0.2);
+                  padding-top: 15px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                  "
+                >
+                  <span>Total:</span>
+                  <span id="total-keranjang" style="color: var(--accent-orange)"
+                    >$0</span
+                  >
+                </div>
+                <input
+                  type="text"
+                  id="catatanPesanan"
+                  placeholder="Catatan Tambahan (Opsional)..."
+                  style="margin-bottom: 15px"
+                />
+                <button
+                  onclick="checkout()"
+                  class="btn-primary w-100"
+                  style="padding: 12px; font-size: 16px"
+                >
+                  Proses Checkout & Bayar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- TAB 3 -->
+        <!-- TAB 3: KELOLA KATALOG ADMIN -->
         <div id="tab-katalog" class="tab-content glass-panel">
           <h3 class="text-red">⚙️ Kelola Katalog Produk</h3>
-          <div class="form-group-inline">
+          <div class="form-group-inline" style="flex-wrap: wrap; gap: 10px">
             <input
               type="text"
               id="namaProdukBaru"
-              placeholder="Nama Produk Baru"
+              placeholder="Nama Produk"
+              style="flex: 1; min-width: 150px"
             />
             <input
               type="number"
               id="hargaProdukBaru"
-              placeholder="Harga (Rp)"
+              placeholder="Harga ($)"
+              style="flex: 1; min-width: 150px"
             />
-            <button onclick="tambahProduk()" class="btn-primary">
+            <input
+              type="text"
+              id="kategoriProdukBaru"
+              placeholder="Kategori (Mkn, Minum, dll)"
+              style="flex: 1; min-width: 150px"
+            />
+            <input
+              type="url"
+              id="gambarProdukBaru"
+              placeholder="URL Link Foto (Boleh kosong)"
+              style="flex: 2; min-width: 200px"
+            />
+            <button
+              onclick="tambahProduk()"
+              class="btn-primary"
+              style="flex: 1; min-width: 120px"
+            >
               Tambah Produk
             </button>
           </div>
@@ -224,7 +291,9 @@
             <table>
               <thead>
                 <tr>
+                  <th>Foto</th>
                   <th>Nama Produk</th>
+                  <th>Kategori</th>
                   <th>Harga</th>
                   <th>Aksi</th>
                 </tr>

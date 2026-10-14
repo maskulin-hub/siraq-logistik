@@ -228,8 +228,12 @@ body::before {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .glass-panel {
@@ -940,4 +944,64 @@ tbody tr:hover {
     animation: none;
     transition: none;
   }
+}
+
+/* ========================================= */
+/* CSS TAMBAHAN UNTUK KERANJANG & KATALOG    */
+/* ========================================= */
+.pesanan-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.katalog-section {
+  flex: 2;
+  min-width: 300px;
+}
+
+.keranjang-section {
+  flex: 1;
+  min-width: 280px;
+  position: sticky;
+  top: 20px;
+}
+
+#grid-katalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.product-card input[type="number"] {
+  width: 60px;
+  padding: 5px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 5px;
+  margin-bottom: 0;
+}
+
+.btn-kategori {
+  padding: 5px 15px;
+  margin: 0 5px 5px 0;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-kategori.active {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.btn-kategori.inactive {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
 }

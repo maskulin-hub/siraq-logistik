@@ -16,11 +16,13 @@ let currentUser = null;
 let isAdmin = false;
 let daftarProduk = [];
 let semuaTransaksi = [];
+let keranjang = [];
 let isAuthModeLogin = true;
 
 const isLoginPage = document.getElementById("auth-section") !== null;
 const isDashboardPage = document.getElementById("dashboard-section") !== null;
 
+// FUNGSI NAVIGASI TAB
 function bukaTab(event, namaTab) {
   let menuItems = document.getElementsByClassName("menu-item");
   for (let i = 0; i < menuItems.length; i++) {
@@ -36,11 +38,7 @@ function bukaTab(event, namaTab) {
   if (event) event.currentTarget.classList.add("active");
 }
 
-function buatPesananLaluKeBeranda() {
-  buatPesanan();
-  document.getElementsByClassName("menu-item")[0].click();
-}
-
+// AUTENTIKASI
 auth.onAuthStateChanged((user) => {
   if (user) {
     if (isLoginPage) {
@@ -116,67 +114,184 @@ function setupDashboardUI() {
   fetchDaftarTransaksi();
 }
 
+// ==========================================
+// FITUR KATALOG PRODUK
+// ==========================================
 function tambahProduk() {
   const nama = document.getElementById("namaProdukBaru").value;
   const harga = document.getElementById("hargaProdukBaru").value;
-  if (!nama || !harga) return alert("Isi nama dan harga!");
+  const kategori =
+    document.getElementById("kategoriProdukBaru").value || "Umum";
+  const gambar =
+    document.getElementById("gambarProdukBaru").value ||
+    "https://via.placeholder.com/150/222/fff?text=No+Image";
+
+  if (!nama || !harga) return alert("Isi nama dan harga produk!");
   db.collection("produk")
-    .add({ nama: nama, harga: Number(harga), timestamp: Date.now() })
+    .add({
+      nama,
+      harga: Number(harga),
+      kategori,
+      gambar,
+      timestamp: Date.now(),
+    })
     .then(() => {
       document.getElementById("namaProdukBaru").value = "";
       document.getElementById("hargaProdukBaru").value = "";
+      document.getElementById("kategoriProdukBaru").value = "";
+      document.getElementById("gambarProdukBaru").value = "";
     });
 }
 
 function hapusProduk(id) {
-  if (confirm("Hapus produk ini?")) db.collection("produk").doc(id).delete();
+  if (confirm("Hapus produk ini dari katalog?"))
+    db.collection("produk").doc(id).delete();
 }
 
 function loadDaftarProduk() {
   db.collection("produk")
     .orderBy("timestamp", "desc")
     .onSnapshot((snap) => {
-      const select = document.getElementById("pilihProduk");
-      const tabelAdmin = document.getElementById("tabel-katalog-admin");
-      if (select)
-        select.innerHTML = '<option value="">-- Pilih Produk --</option>';
-      if (tabelAdmin) tabelAdmin.innerHTML = "";
       daftarProduk = [];
+      const tabelAdmin = document.getElementById("tabel-katalog-admin");
+      if (tabelAdmin) tabelAdmin.innerHTML = "";
 
       snap.forEach((doc) => {
         const p = doc.data();
         p.id = doc.id;
         daftarProduk.push(p);
-        if (select)
-          select.innerHTML += `<option value="${p.id}">${p.nama} - Rp ${p.harga.toLocaleString("id-ID")}</option>`;
-        if (tabelAdmin)
-          tabelAdmin.innerHTML += `<tr><td>${p.nama}</td><td>Rp ${p.harga.toLocaleString("id-ID")}</td><td><button class="btn-action bg-red" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button></td></tr>`;
+
+        if (tabelAdmin) {
+          tabelAdmin.innerHTML += `
+            <tr>
+              <td><img src="${p.gambar}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"></td>
+              <td>${p.nama}</td>
+              <td><span class="badge bg-dark">${p.kategori || "Umum"}</span></td>
+              <td>$${p.harga.toLocaleString("en-US")}</td>
+              <td><button class="btn-action bg-red" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button></td>
+            </tr>`;
+        }
       });
+      renderKatalogGrid();
     });
 }
 
-function buatPesanan() {
-  const produkId = document.getElementById("pilihProduk").value;
-  const jumlahInput = document.getElementById("jumlahPesanan");
-  const jumlah = Number(jumlahInput ? jumlahInput.value : 1) || 1;
+function renderKatalogGrid(filterKategori = "Semua") {
+  const grid = document.getElementById("grid-katalog");
+  const filterContainer = document.getElementById("kategori-filter");
+  if (!grid || !filterContainer) return;
+
+  // Render Kategori
+  let categories = [
+    "Semua",
+    ...new Set(daftarProduk.map((p) => p.kategori || "Umum")),
+  ];
+  filterContainer.innerHTML = "";
+  categories.forEach((kat) => {
+    let btnClass =
+      kat === filterKategori ? "btn-kategori active" : "btn-kategori inactive";
+    filterContainer.innerHTML += `<button class="${btnClass}" onclick="renderKatalogGrid('${kat}')">${kat}</button>`;
+  });
+
+  // Render Kartu Grid
+  grid.innerHTML = "";
+  daftarProduk.forEach((p) => {
+    let kat = p.kategori || "Umum";
+    if (filterKategori !== "Semua" && kat !== filterKategori) return;
+
+    grid.innerHTML += `
+      <div class="product-card glass-panel" style="padding:15px; text-align:center; position:relative; margin-bottom:0;">
+        <span class="badge bg-dark" style="position:absolute; top:10px; right:10px; font-size:10px; z-index:2;">${kat}</span>
+        <img src="${p.gambar}" style="width:100%; height:130px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
+        <h4 style="margin:5px 0; font-size:16px;">${p.nama}</h4>
+        <p style="color:var(--accent-orange); font-weight:bold; margin:5px 0;">$${p.harga.toLocaleString("en-US")}</p>
+        
+        <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:15px;">
+           <input type="number" id="qty-${p.id}" value="1" min="1">
+           <button class="btn-primary" onclick="tambahKeKeranjang('${p.id}')" style="padding:8px 12px; font-size:12px; flex:1;">+ Keranjang</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ==========================================
+// FITUR KERANJANG & CHECKOUT
+// ==========================================
+function tambahKeKeranjang(id) {
+  const p = daftarProduk.find((x) => x.id === id);
+  const qtyInput = document.getElementById(`qty-${id}`);
+  const jumlah = Number(qtyInput.value) || 1;
+
+  if (!p) return;
+
+  let existing = keranjang.find((item) => item.id === id);
+  if (existing) {
+    existing.jumlah += jumlah;
+  } else {
+    keranjang.push({
+      id: p.id,
+      nama: p.nama,
+      harga: p.harga,
+      kategori: p.kategori || "Umum",
+      jumlah: jumlah,
+    });
+  }
+  qtyInput.value = 1;
+  renderKeranjang();
+}
+
+function hapusDariKeranjang(index) {
+  keranjang.splice(index, 1);
+  renderKeranjang();
+}
+
+function renderKeranjang() {
+  const list = document.getElementById("list-keranjang");
+  const totalSpan = document.getElementById("total-keranjang");
+  if (!list) return;
+
+  list.innerHTML = "";
+  let total = 0;
+
+  if (keranjang.length === 0) {
+    list.innerHTML =
+      "<p style='text-align:center; color:#ccc; font-size:12px;'>Keranjang masih kosong</p>";
+  } else {
+    keranjang.forEach((item, i) => {
+      let subtotal = item.harga * item.jumlah;
+      total += subtotal;
+      list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 0; font-size:14px;">
+          <div>
+            <strong style="display:block; margin-bottom:3px;">${item.nama}</strong>
+            <span style="font-size:11px; color:#aaa; background:rgba(0,0,0,0.3); padding:2px 5px; border-radius:3px;">${item.kategori}</span>
+            <span style="font-size:12px; color:#ccc; margin-left:5px;">${item.jumlah}x @ $${item.harga.toLocaleString("en-US")}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="color:white; font-weight:bold;">$${subtotal.toLocaleString("en-US")}</span>
+            <button class="btn-action bg-red" onclick="hapusDariKeranjang(${i})" style="padding:3px 7px; font-size:12px; border-radius:4px;">✕</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+  totalSpan.innerText = `$${total.toLocaleString("en-US")}`;
+}
+
+function checkout() {
+  if (keranjang.length === 0) return alert("Keranjang belanja masih kosong!");
   const catatan = document.getElementById("catatanPesanan").value;
-
-  if (!produkId) return alert("Pilih produk terlebih dahulu!");
-  if (jumlah < 1) return alert("Jumlah minimal 1!");
-
-  const p = daftarProduk.find((x) => x.id === produkId);
-  if (!p) return alert("Produk tidak ditemukan!");
-
-  const hargaSatuan = Number(p.harga) || 0;
-  const totalHarga = hargaSatuan * jumlah;
+  let totalHargaSemua = keranjang.reduce(
+    (sum, item) => sum + item.harga * item.jumlah,
+    0,
+  );
 
   db.collection("transaksi")
     .add({
       emailPemesan: currentUser.email,
-      namaBarang: p.nama,
-      hargaSatuan: hargaSatuan,
-      jumlah: jumlah,
-      totalHarga: totalHarga,
+      items: keranjang,
+      totalHargaSemua: totalHargaSemua,
       catatan: catatan || "-",
       statusBayar: "Belum Dibayar",
       statusKerja: "Belum Dibuat",
@@ -184,17 +299,22 @@ function buatPesanan() {
     })
     .then(() => {
       alert(
-        "Pesanan Berhasil Dibuat! Total: Rp " +
-          totalHarga.toLocaleString("id-ID"),
+        "Checkout Berhasil! Total yang harus dibayar: $" +
+          totalHargaSemua.toLocaleString("en-US"),
       );
       document.getElementById("catatanPesanan").value = "";
-      if (jumlahInput) jumlahInput.value = "1";
+      keranjang = [];
+      renderKeranjang();
+      document.getElementsByClassName("menu-item")[0].click();
     })
     .catch((err) => {
-      alert("Gagal membuat pesanan: " + err.message);
+      alert("Gagal melakukan checkout: " + err.message);
     });
 }
 
+// ==========================================
+// FITUR TRANSAKSI & ADMIN STATISTIK
+// ==========================================
 function fetchDaftarTransaksi() {
   db.collection("transaksi")
     .orderBy("timestamp", "desc")
@@ -231,28 +351,6 @@ function renderTabelTransaksi() {
       data.statusBayar === "Sudah Dibayar" ? "bg-green" : "bg-red";
     let badgeKerja =
       data.statusKerja === "Sudah Dibuat" ? "bg-green" : "bg-red";
-
-    let jumlah = Number(data.jumlah) || 1;
-    let hargaSatuan = Number(data.hargaSatuan);
-
-    if (!hargaSatuan && data.harga) {
-      hargaSatuan = Number(data.harga) / jumlah;
-    } else if (!hargaSatuan) {
-      hargaSatuan = 0;
-    }
-
-    let totalHarga = Number(data.totalHarga) || hargaSatuan * jumlah;
-
-    let actionHtml = "";
-    if (isAdmin) {
-      // TOMBOL AKSI LENGKAP: Bayar, Kerja, dan Tombol Hapus Transaksi
-      actionHtml = `<td style="display: table-cell;">
-                <button class="btn-action" onclick="ubahBayar('${data.id}', '${data.statusBayar}')">💳 Bayar</button>
-                <button class="btn-action" onclick="ubahKerja('${data.id}', '${data.statusKerja}')">🛠️ Kerja</button>
-                <button class="btn-action bg-red" onclick="hapusTransaksi('${data.id}')" style="color:#F87171; border-color:rgba(239, 68, 68, 0.3);">🗑️ Hapus</button>
-            </td>`;
-    }
-
     let tgl = new Date(data.timestamp).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
@@ -260,19 +358,49 @@ function renderTabelTransaksi() {
       minute: "2-digit",
     });
 
+    let detailPesananHtml = "";
+    if (data.items) {
+      let dikelompokkan = {};
+      data.items.forEach((i) => {
+        if (!dikelompokkan[i.kategori]) dikelompokkan[i.kategori] = [];
+        dikelompokkan[i.kategori].push(i);
+      });
+
+      for (let kat in dikelompokkan) {
+        detailPesananHtml += `<div style="margin-bottom:8px; text-align:left;">
+          <span class="badge bg-dark" style="font-size:10px; margin-bottom:3px;">📦 ${kat}</span><br>`;
+        dikelompokkan[kat].forEach((i) => {
+          detailPesananHtml += `- ${i.nama} (<b style="color:var(--accent-orange);">${i.jumlah}x</b>)<br>`;
+        });
+        detailPesananHtml += `</div>`;
+      }
+    } else {
+      detailPesananHtml = `<span class="badge bg-dark">📦 Umum</span><br>- ${data.namaBarang} (<b>${data.jumlah}x</b>)`;
+    }
+
+    let totalKeseluruhan =
+      Number(data.totalHargaSemua) || Number(data.totalHarga) || 0;
+    let actionHtml = "";
+
+    if (isAdmin) {
+      actionHtml = `<td style="display: table-cell;">
+            <button class="btn-action" style="margin-bottom:5px;" onclick="ubahBayar('${data.id}', '${data.statusBayar}')">💳 Bayar</button>
+            <button class="btn-action" style="margin-bottom:5px;" onclick="ubahKerja('${data.id}', '${data.statusKerja}')">🛠️ Kerja</button>
+            <button class="btn-action bg-red" onclick="hapusTransaksi('${data.id}')" style="color:#F87171;">🗑️ Hapus</button>
+        </td>`;
+    }
+
     tabel.innerHTML += `
-            <tr>
-                <td style="font-size:12px; color:#ccc;">${tgl}</td>
-                <td>${data.emailPemesan}</td>
-                <td><strong>${data.namaBarang}</strong></td>
-                <td>Rp ${hargaSatuan.toLocaleString("id-ID")}</td>
-                <td><span class="badge bg-dark">${jumlah} pcs</span></td>
-                <td><strong style="color: var(--accent-orange);">Rp ${totalHarga.toLocaleString("id-ID")}</strong></td>
-                <td>${data.catatan}</td>
-                <td><span class="badge ${badgeBayar}">${data.statusBayar}</span></td>
-                <td><span class="badge ${badgeKerja}">${data.statusKerja}</span></td>
-                ${actionHtml}
-            </tr>`;
+      <tr>
+          <td style="font-size:12px; color:#ccc;">${tgl}</td>
+          <td>${data.emailPemesan}</td>
+          <td style="line-height:1.4;">${detailPesananHtml}</td>
+          <td><strong style="color: var(--accent-orange); font-size:16px;">$${totalKeseluruhan.toLocaleString("en-US")}</strong></td>
+          <td>${data.catatan}</td>
+          <td><span class="badge ${badgeBayar}">${data.statusBayar}</span></td>
+          <td><span class="badge ${badgeKerja}">${data.statusKerja}</span></td>
+          ${actionHtml}
+      </tr>`;
   });
 }
 
@@ -285,7 +413,7 @@ function hitungStatistikAdmin() {
 
   semuaTransaksi.forEach((t) => {
     if (t.statusBayar === "Sudah Dibayar") {
-      let total = t.totalHarga || t.hargaSatuan * t.jumlah || t.harga || 0;
+      let total = t.totalHargaSemua || t.totalHarga || 0;
       totalPendapatan += Number(total);
       let tgl = new Date(t.timestamp);
       if (tgl.getMonth() === bulanIni && tgl.getFullYear() === tahunIni)
@@ -294,9 +422,9 @@ function hitungStatistikAdmin() {
   });
 
   document.getElementById("total-pendapatan").innerText =
-    `Rp ${totalPendapatan.toLocaleString("id-ID")}`;
+    `$${totalPendapatan.toLocaleString("en-US")}`;
   document.getElementById("pendapatan-bulan-ini").innerText =
-    `Rp ${pendapatanBulanIni.toLocaleString("id-ID")}`;
+    `$${pendapatanBulanIni.toLocaleString("en-US")}`;
   document.getElementById("total-pesanan").innerText = semuaTransaksi.length;
 }
 
@@ -314,18 +442,8 @@ function ubahKerja(id, stat) {
       statusKerja: stat === "Belum Dibuat" ? "Sudah Dibuat" : "Belum Dibuat",
     });
 }
-
-// FUNGSI UNTUK MENGHAPUS TRANSAKSI (Hanya Admin)
 function hapusTransaksi(id) {
-  if (confirm("Apakah Anda yakin ingin menghapus transaksi ini dari daftar?")) {
-    db.collection("transaksi")
-      .doc(id)
-      .delete()
-      .then(() => {
-        alert("Transaksi berhasil dihapus!");
-      })
-      .catch((err) => {
-        alert("Gagal menghapus transaksi: " + err.message);
-      });
+  if (confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) {
+    db.collection("transaksi").doc(id).delete();
   }
 }
